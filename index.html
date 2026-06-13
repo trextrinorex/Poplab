@@ -1,13 +1,607 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PopLab — Pop. Smash. Spin. Relax.</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                350: '#b0bccd',
+                450: '#64748b',
+              },
+              blue: {
+                450: '#60a5fa',
+              },
+              rose: {
+                450: '#fb7185',
+                455: '#f43f5e',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <!-- Custom animations css -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased overflow-x-hidden selection:bg-rose-500/30 selection:text-white">
+
+    <!-- Real-time Slide Toast Overlay Alerts Panel -->
+    <div id="notifications-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 flex flex-col space-y-2 w-full max-w-sm px-4 pointer-events-none">
+      <!-- Toast notification divs injected dynamically by JS -->
+    </div>
+
+    <!-- Modern Glassmorphic Top Header -->
+    <nav class="sticky top-0 z-40 bg-slate-950/75 backdrop-blur-lg border-b border-slate-900/80 px-4 md:px-8 py-4 flex items-center justify-between">
+      <button onclick="switchTab('home')" class="flex items-center space-x-2 bg-transparent border-0 cursor-pointer text-left focus:outline-none">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-orange-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+          <span class="text-xl font-black text-white">P</span>
+        </div>
+        <div>
+          <h1 class="text-lg font-black text-white tracking-tight leading-none">PopLab</h1>
+          <p class="text-[9px] text-slate-400 tracking-wider uppercase font-bold mt-0.5">Stress Relief Hub</p>
+        </div>
+      </button>
+
+      <!-- Global Sound Synthesizer controls header -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2 bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-800/80">
+          <button id="mute-btn" onclick="toggleMute()" class="text-slate-400 hover:text-white transition-all focus:outline-none cursor-pointer" title="Toggle Sound Mute">
+            <i data-lucide="volume-2" class="w-4 h-4 text-emerald-400"></i>
+          </button>
+          <div class="flex items-center space-x-1.5 h-full">
+            <i data-lucide="sliders" class="w-3 h-3 text-slate-500"></i>
+            <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" class="w-16 h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer focus:outline-none" title="Master Volume Level" />
+          </div>
+        </div>
+
+        <button onclick="switchTab('achievements')" class="relative p-2.5 rounded-xl border bg-slate-900/40 border-slate-800/80 text-slate-400 hover:text-white transition-all cursor-pointer focus:outline-none flex items-center justify-center" id="header-achievements-btn" title="View Achievements Locker">
+          <i data-lucide="trophy" class="w-4.5 h-4.5"></i>
+          <span id="achievement-badge" class="hidden absolute -top-1 -right-1 bg-amber-500 text-slate-950 font-black text-[9px] w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-slate-950">
+            0
+          </span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Main Container Content -->
+    <main class="flex-1 overflow-y-auto pb-24">
+
+      <!-- LOBBY/HOME VIEW -->
+      <div id="view-home" class="view-panel w-full max-w-5xl mx-auto px-4 md:px-8 py-8 animate-fade-in">
+        <!-- Ambient visual glowing particles -->
+        <div class="absolute top-[30%] left-[20%] w-72 h-72 bg-rose-500/5 rounded-full filter blur-3xl z-0 pointer-events-none"></div>
+        <div class="absolute top-[60%] right-[10%] w-80 h-80 bg-blue-500/5 rounded-full filter blur-3xl z-0 pointer-events-none"></div>
+
+        <!-- Giant Hero Banner Section -->
+        <div class="relative text-center max-w-2xl mx-auto py-12 md:py-16 flex flex-col items-center z-10 select-none">
+          <div class="inline-flex items-center space-x-2 bg-gradient-to-r from-rose-500/15 via-orange-500/15 to-amber-500/15 border border-rose-500/20 rounded-full px-4 py-1.5 mb-6 text-rose-400 text-xs font-bold tracking-wider animate-pulse">
+            <i data-lucide="smile" class="w-4 h-4 animate-spin-slow"></i>
+            <span>ANTI-ANXIETY MICRO LAB IS ONLINE</span>
+          </div>
+
+          <h2 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-none">
+            Pop. Smash. <br class="md:hidden" /> Spin. Relax.
+          </h2>
+
+          <p class="text-slate-400 text-sm md:text-base mt-4.5 font-light leading-relaxed max-w-lg">
+            Enter <strong class="text-slate-200">PopLab</strong>, an exquisite selection of high-fidelity, satisfying micro-games crafted specifically for instantaneous stress relief, sensory comfort, and boredom venting.
+          </p>
+
+          <button onclick="startApp()" class="mt-8 px-8 py-3.5 bg-gradient-to-r from-rose-500 via-orange-500 to-amber-500 text-white rounded-2xl font-black text-sm tracking-widest cursor-pointer hover:shadow-[0_12px_28px_rgba(239,68,68,0.35)] transition-all hover:scale-102 uppercase flex items-center space-x-2.5 shadow-lg border-b-4 border-rose-600 active:translate-y-0.5 active:border-b-0">
+            <i data-lucide="play" class="w-4 h-4 fill-current text-white"></i>
+            <span>Enter Stress Relief Lab</span>
+          </button>
+        </div>
+
+        <!-- Quick Metrics Statistics Overview bar -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-4xl mx-auto mb-12 select-none relative z-10">
+          <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4.5 border border-slate-900 flex items-center space-x-3.5 shadow-md">
+            <div class="p-2 bg-blue-500/15 text-blue-400 rounded-xl border border-blue-500/20">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Bubble Pops</h4>
+              <p id="stat-pops" class="text-base font-black text-white mt-0.5 tracking-wide">0</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4.5 border border-slate-900 flex items-center space-x-3.5 shadow-md">
+            <div class="p-2 bg-rose-500/15 text-rose-400 rounded-xl border border-rose-500/20">
+              <i data-lucide="hammer" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Lab Smashes</h4>
+              <p id="stat-smashes" class="text-base font-black text-white mt-0.5 tracking-wide">0</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4.5 border border-slate-900 flex items-center space-x-3.5 shadow-md">
+            <div class="p-2 bg-cyan-500/15 text-cyan-400 rounded-xl border border-cyan-500/20">
+              <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold">Spinner Spins</h4>
+              <p id="stat-spins" class="text-base font-black text-white mt-0.5 tracking-wide">0</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl p-4.5 border border-slate-900 flex items-center space-x-3.5 shadow-md">
+            <div class="p-2 bg-pink-500/15 text-pink-400 rounded-xl border border-pink-500/20">
+              <i data-lucide="flame" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="text-[10px] text-slate-500 uppercase tracking-wider font-extrabold font-black">Rage Pressure</h4>
+              <p id="stat-rage" class="text-base font-black text-white mt-0.5 tracking-wide">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Micro-Chamber Selection Portal Card grid -->
+        <div class="max-w-4xl mx-auto">
+          <h3 class="text-xs text-slate-400 uppercase tracking-widest font-black mb-6 text-center select-none">
+            SELECT A SPECIALIZED EXPERIMENTAL STAGE
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5.5 select-none relative z-10">
+            <!-- Stage 1 Card -->
+            <button onclick="switchTab('bubble')" class="group bg-slate-900/40 hover:bg-slate-900/80 border border-slate-900 hover:border-blue-500/30 p-5 rounded-3xl text-left transition-all cursor-pointer hover:shadow-[0_8px_24px_rgba(59,130,246,0.1)] flex flex-col justify-between h-48 focus:outline-none">
+              <div class="flex items-start justify-between w-full">
+                <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/15">
+                  <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[9px] bg-blue-500/10 text-blue-400 font-extrabold tracking-wider px-2.5 py-1 rounded-full uppercase border border-blue-500/15">
+                  GAME #1
+                </span>
+              </div>
+              <div>
+                <h4 class="text-white font-black text-base tracking-wide group-hover:text-blue-450 transition-all">
+                  Bubble Wrap Popper
+                </h4>
+                <p class="text-xs text-slate-400 mt-1 lines-clamp opacity-85 leading-normal font-light">
+                  Sensory physical pops on an infinite modular bubble sheet. Accumulate combos and enjoy clean high pitch sweeps.
+                </p>
+              </div>
+            </button>
+
+            <!-- Stage 2 Card -->
+            <button onclick="switchTab('smash')" class="group bg-slate-900/40 hover:bg-slate-900/80 border border-slate-900 hover:border-rose-500/30 p-5 rounded-3xl text-left transition-all cursor-pointer hover:shadow-[0_8px_24px_rgba(239,68,68,0.1)] flex flex-col justify-between h-48 focus:outline-none">
+              <div class="flex items-start justify-between w-full">
+                <div class="p-3 bg-rose-500/10 text-rose-450 rounded-xl border border-rose-500/15">
+                  <i data-lucide="hammer" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[9px] bg-rose-500/10 text-rose-450 font-extrabold tracking-wider px-2.5 py-1 rounded-full uppercase border border-rose-500/15">
+                  GAME #2
+                </span>
+              </div>
+              <div>
+                <h4 class="text-white font-black text-base tracking-wide group-hover:text-rose-455 transition-all">
+                  Destruction Smash Lab
+                </h4>
+                <p class="text-xs text-slate-400 mt-1 lines-clamp opacity-85 leading-normal font-light">
+                  Choose heavy hammers or bats and shatter plates, clay brick, watermelons, and glass panes with true mechanical fragments.
+                </p>
+              </div>
+            </button>
+
+            <!-- Stage 3 Card -->
+            <button onclick="switchTab('spinner')" class="group bg-slate-900/40 hover:bg-slate-900/80 border border-slate-900 hover:border-cyan-500/30 p-5 rounded-3xl text-left transition-all cursor-pointer hover:shadow-[0_8px_24px_rgba(6,182,212,0.1)] flex flex-col justify-between h-48 focus:outline-none">
+              <div class="flex items-start justify-between w-full">
+                <div class="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/15">
+                  <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[9px] bg-cyan-500/10 text-cyan-400 font-extrabold tracking-wider px-2.5 py-1 rounded-full uppercase border border-cyan-500/15">
+                  GAME #3
+                </span>
+              </div>
+              <div>
+                <h4 class="text-white font-black text-base tracking-wide group-hover:text-cyan-400 transition-all">
+                  Fidget Spinner Simulator
+                </h4>
+                <p class="text-xs text-slate-400 mt-1 lines-clamp opacity-85 leading-normal font-light">
+                  Tactical spinner design selection with ceramic speed hums, swipe frictional momentum calculations, and fluid blur rates.
+                </p>
+              </div>
+            </button>
+
+            <!-- Stage 4 Card -->
+            <button onclick="switchTab('rage')" class="group bg-slate-900/40 hover:bg-slate-900/80 border border-slate-900 hover:border-pink-500/30 p-5 rounded-3xl text-left transition-all cursor-pointer hover:shadow-[0_8px_24px_rgba(236,72,153,0.1)] flex flex-col justify-between h-48 focus:outline-none">
+              <div class="flex items-start justify-between w-full">
+                <div class="p-3 bg-pink-500/10 text-pink-400 rounded-xl border border-pink-500/15">
+                  <i data-lucide="flame" class="w-5 h-5"></i>
+                </div>
+                <span class="text-[9px] bg-pink-500/10 text-pink-400 font-extrabold tracking-wider px-2.5 py-1 rounded-full uppercase border border-pink-500/15">
+                  GAME #4
+                </span>
+              </div>
+              <div>
+                <h4 class="text-white font-black text-base tracking-wide group-hover:text-pink-400 transition-all">
+                  The Rage Button
+                </h4>
+                <p class="text-xs text-slate-400 mt-1 lines-clamp opacity-85 leading-normal font-light">
+                  Vent aggressive energy over a colossal red button that heats up based on click frequencies. Earn sarcastic commentary.
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer with warm developer signatures -->
+        <div class="mt-16 border-t border-slate-900 pt-8 text-center text-slate-500 text-xs flex flex-row items-center justify-center space-x-1.5 select-none pr-3">
+          <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-500 fill-current animate-pulse"></i>
+          <span>Created with high-polish sensory design on PopLab. Safe. Sound. Relaxing.</span>
+        </div>
+      </div>
+
+      <!-- BUBBLE WRAP GAME VIEW -->
+      <div id="view-bubble" class="view-panel w-full py-4 animate-fade-in hidden">
+        <div class="flex flex-col items-center w-full max-w-4xl mx-auto px-4 py-3">
+          <div class="flex flex-wrap items-center justify-between w-full bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 mb-4 border border-slate-800 shadow-xl gap-3 text-left">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 bg-blue-500/15 rounded-xl border border-blue-500/20 text-blue-400">
+                <i data-lucide="sparkles" class="w-5 h-5 animate-pulse"></i>
+              </div>
+              <div>
+                <h3 class="text-sm text-slate-400 font-medium">Popper Score</h3>
+                <p class="text-lg font-bold text-white tracking-wide">
+                  <span id="bubble-count-field">0</span> <span class="text-xs text-slate-500 font-normal">total pops</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Combo Multiplier Meter -->
+            <div class="flex items-center space-x-6">
+              <div id="bubble-combo-wrapper" class="hidden flex items-center bg-gradient-to-r from-pink-500/20 to-purple-500/20 border border-pink-500/30 px-3 py-1 rounded-full animate-bounce">
+                <i data-lucide="flame" class="w-4 h-4 text-pink-400 mr-1 fill-current"></i>
+                <span id="bubble-combo-text" class="text-xs font-bold text-pink-300 tracking-wider">0X COMBO</span>
+              </div>
+
+              <div class="flex items-center bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-700/50">
+                <i data-lucide="trophy" class="w-4 h-4 text-amber-400 mr-2"></i>
+                <div class="text-right">
+                  <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Best Combo</p>
+                  <p id="bubble-best-combo-text" class="text-xs font-bold text-slate-300">0 pops</p>
+                </div>
+              </div>
+
+              <button onclick="newBubbleSheet()" class="flex items-center justify-center p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer border border-slate-700" title="Generate New Bubble Sheet">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Bubble Grid Workspace -->
+          <div id="bubble-workspace" class="relative w-full aspect-square md:aspect-video flex items-center justify-center bg-slate-950/80 rounded-3xl border border-slate-800 overflow-hidden shadow-inner p-6 select-none">
+            <!-- Decorative Grid Mesh Background -->
+            <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1.2px,transparent_1.2px)] [background-size:16px_16px] opacity-35"></div>
+            <!-- Floating Interactive Canvas for splats and rings -->
+            <canvas id="bubble-canvas" class="absolute inset-0 pointer-events-none z-10"></canvas>
+            <!-- Bubble Wrap container matrix -->
+            <div id="bubble-grid" class="relative grid gap-3 max-w-full max-h-full items-center justify-center bg-slate-900/30 p-5 rounded-2xl border border-slate-800/40 shadow-inner z-0"></div>
+          </div>
+
+          <!-- Helpful Instructions -->
+          <p id="bubble-instructions-msg" class="text-slate-400 text-xs text-center mt-4 tracking-wide font-light max-w-md">
+            Tip: Tap or swipe over the bubbles quickly to unlock high multipliers and hear satisfying pitch modifications! Only 0 bubbles remaining.
+          </p>
+        </div>
+      </div>
+
+      <!-- SMASH LAB VIEW -->
+      <div id="view-smash" class="view-panel w-full py-4 animate-fade-in hidden">
+        <div class="flex flex-col items-center w-full max-w-4xl mx-auto px-4 py-3 select-none">
+          <!-- Interactive Tool Selection Rail -->
+          <div class="flex flex-col md:flex-row items-center justify-between w-full bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 mb-4 border border-slate-800 gap-4 shadow-xl text-left">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 bg-rose-500/15 rounded-xl border border-rose-500/20 text-rose-400">
+                <i data-lucide="award" class="w-5 h-5 animate-pulse"></i>
+              </div>
+              <div>
+                <h3 class="text-sm text-slate-400 font-medium">Smash Laboratory</h3>
+                <p class="text-lg font-bold text-white tracking-wide">
+                  <span id="smash-count-field">0</span> <span class="text-xs text-slate-500 font-normal">demolished items</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Selected Weapon / Tool Bar -->
+            <div class="flex flex-wrap items-center justify-center gap-2">
+              <button onclick="selectSmashTool('hammer')" id="tool-btn-hammer" class="flex items-center space-x-2 px-4 py-2 rounded-xl border transition-all cursor-pointer font-bold bg-rose-500 text-white border-rose-600 shadow-[0_4px_12px_rgba(239,68,68,0.3)] scale-102">
+                <i data-lucide="hammer" class="w-4 h-4"></i>
+                <span class="text-xs tracking-wider">Sledge Hammer</span>
+              </button>
+              <button onclick="selectSmashTool('bat')" id="tool-btn-bat" class="flex items-center space-x-2 px-4 py-2 rounded-xl border transition-all cursor-pointer bg-slate-800/80 text-slate-300 border-slate-700/80 hover:bg-slate-700 hover:text-white">
+                <i data-lucide="sword" class="w-4 h-4"></i>
+                <span class="text-xs tracking-wider">Baseball Bat</span>
+              </button>
+              <button onclick="selectSmashTool('fist')" id="tool-btn-fist" class="flex items-center space-x-2 px-4 py-2 rounded-xl border transition-all cursor-pointer bg-slate-800/80 text-slate-300 border-slate-700/80 hover:bg-slate-700 hover:text-white">
+                <i data-lucide="hand" class="w-4 h-4"></i>
+                <span class="text-xs tracking-wider">Iron Fist</span>
+              </button>
+
+              <button onclick="spawnNextSmashObject()" class="flex items-center justify-center p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer border border-slate-700" title="Next Object">
+                <i data-lucide="refresh-cw" class="w-4.5 h-4.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Main Destruction Arena -->
+          <div id="smash-arena" class="relative w-full aspect-square md:aspect-video flex flex-col items-center justify-center bg-radial from-slate-900 via-slate-950 to-black rounded-3xl border border-slate-800/80 shadow-2xl overflow-hidden cursor-crosshair select-none touch-none">
+            <!-- Floating Physics Canvas -->
+            <canvas id="smash-canvas" class="absolute inset-0 z-0 pointer-events-none"></canvas>
+
+            <!-- Damage HP HUD Bar -->
+            <div id="smash-hp-hud" class="absolute top-5 left-1/2 transform -translate-x-1/2 z-10 w-64 bg-slate-900/80 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-800 text-center shadow-lg">
+              <p id="smash-target-name" class="text-xs font-bold text-slate-300 tracking-wider mb-1 uppercase">Tempered Glass Pane</p>
+              <div class="relative w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="smash-hp-bar" class="absolute top-0 left-0 h-full bg-gradient-to-r from-rose-500 to-orange-500 rounded-full transition-all duration-75" style="width: 100%;"></div>
+              </div>
+              <p id="smash-hp-text" class="text-[10px] text-slate-500 font-semibold mt-1">HP: 100 / 100</p>
+            </div>
+
+            <!-- Success Splash Indicator state -->
+            <div id="smash-broken-indicator" class="hidden absolute z-10 flex flex-col items-center animate-bounce text-center">
+              <span class="text-4xl">💥</span>
+              <span class="text-sm font-bold text-rose-400 bg-rose-950/80 border border-rose-900/50 px-4 py-1.5 rounded-full backdrop-blur-md shadow-lg tracking-wider mt-2">
+                DESTROYED!
+              </span>
+            </div>
+
+            <!-- Strike Overlay icon template -->
+            <div id="strike-helper-overlay" class="absolute z-30 pointer-events-none hidden scale-125">
+              <i id="strike-tool-icon" data-lucide="hammer" class="w-14 h-14 text-rose-400 fill-rose-500 opacity-90 drop-shadow-[0_0_8px_rgba(239,68,68,0.7)]"></i>
+            </div>
+          </div>
+
+          <p class="text-slate-400 text-xs text-center mt-4 tracking-wide font-light max-w-md">
+            Choose different tools (Sledge is strongest, Iron Fist is fastest) and tap the object repeatedly to stress-vent and watch beautiful material physics shatters!
+          </p>
+        </div>
+      </div>
+
+      <!-- FIDGET SPINNER VIEW -->
+      <div id="view-spinner" class="view-panel w-full py-4 animate-fade-in hidden">
+        <div class="flex flex-col items-center w-full max-w-4xl mx-auto px-4 py-3 select-none">
+          <!-- Mechanical Spinning Metrics Panel -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 w-full bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 mb-4 border border-slate-800 shadow-xl text-left">
+            <div class="flex items-center space-x-3 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/50">
+              <i data-lucide="circle-dot" class="w-5 h-5 text-cyan-400 animate-spin"></i>
+              <div>
+                <h4 class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Current Speed</h4>
+                <p class="text-sm font-bold text-white tracking-wide">
+                  <span id="spinner-rpm-text">0</span> <span class="text-[10px] text-cyan-400 font-medium">RPM</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/50">
+              <i data-lucide="award" class="w-5 h-5 text-amber-400"></i>
+              <div>
+                <h4 class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Top Velocity</h4>
+                <p class="text-sm font-bold text-white tracking-wide">
+                  <span id="spinner-max-rpm-text">0</span> <span class="text-[10px] text-amber-400 font-medium">RPM</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/50">
+              <i data-lucide="play" class="w-5 h-5 text-green-400"></i>
+              <div>
+                <h4 class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Active Spin</h4>
+                <p class="text-sm font-bold text-white tracking-wide">
+                  <span id="spinner-time-text">0</span> <span class="text-[10px] text-green-400 font-medium">secs</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3 bg-slate-950/30 p-2.5 rounded-xl border border-slate-800/50">
+              <i data-lucide="rotate-cw" class="w-5 h-5 text-purple-400"></i>
+              <div>
+                <h4 class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Longest Glide</h4>
+                <p class="text-sm font-bold text-white tracking-wide">
+                  <span id="spinner-longest-text">0</span> <span class="text-[10px] text-purple-400 font-medium">secs</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Drag Arena -->
+          <div id="spinner-arena" class="relative w-full aspect-square md:aspect-video flex items-center justify-center bg-radial from-slate-900 via-slate-950 to-black rounded-3xl border border-slate-800/80 overflow-hidden cursor-grab active:cursor-grabbing shadow-2xl touch-none select-none">
+            <!-- Background mechanical vector circles -->
+            <div class="absolute inset-0 bg-[radial-gradient(#0891b2_0.8px,transparent_0.8px)] [background-size:24px_24px] opacity-20 z-0"></div>
+            <div class="absolute w-72 h-72 border border-cyan-500/10 rounded-full animate-pulse z-0 pointer-events-none"></div>
+            <div class="absolute w-96 h-96 border border-cyan-500/5 rounded-full z-0 pointer-events-none"></div>
+
+            <div id="spinner-hint" class="absolute top-8 text-center bg-slate-900/60 backdrop-blur-sm border border-slate-800 px-4 py-2 rounded-full z-10 animate-pulse pointer-events-none">
+              <p class="text-xs text-slate-400 font-medium tracking-wider uppercase">Swipe outwards or click boost to set spinning!</p>
+            </div>
+
+            <!-- Magnetic central core hub rendering SVGs -->
+            <div id="spinner-anchor" class="relative w-76 h-76 flex items-center justify-center pointer-events-none z-10 select-none">
+              <div id="fidget-spinner-blade" class="w-full h-full select-none" style="transform-origin: center center;">
+                <!-- SVG injected dynamically depending on selections -->
+              </div>
+            </div>
+
+            <!-- Quick tap boost speed selector button -->
+            <button onclick="boostFidgetSpinner(event)" class="absolute bottom-6 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800/80 px-4 py-2 rounded-xl text-xs font-bold text-cyan-400 cursor-pointer shadow-lg tracking-wider flex items-center space-x-1.5 active:scale-95 transition-all z-20">
+              <i data-lucide="rotate-cw" class="w-4 h-4 animate-spin"></i>
+              <span>BOOST SPIN (+RPM)</span>
+            </button>
+          </div>
+
+          <!-- Decorative Spinner Selection Bar -->
+          <div class="flex flex-col items-center w-full mt-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800 gap-3 text-left">
+            <h3 class="text-xs text-slate-400 capitalize font-bold tracking-wider self-start">Select Module Design</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 w-full" id="spinner-designs-grid">
+              <!-- Dynamically mapped buttons by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAGE BUTTON VIEW -->
+      <div id="view-rage" class="view-panel w-full py-4 animate-fade-in hidden">
+        <div class="flex flex-col items-center w-full max-w-4xl mx-auto px-4 py-3 select-none">
+          <!-- Pressure metrics dashboard tracker -->
+          <div class="flex flex-col md:flex-row items-center justify-between w-full bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 mb-4 border border-slate-800 gap-4 shadow-xl text-left">
+            <div class="flex items-center space-x-3">
+              <div class="p-2 bg-pink-500/15 rounded-xl border border-pink-500/20 text-pink-400">
+                <i data-lucide="flame" class="w-5 h-5 animate-pulse"></i>
+              </div>
+              <div>
+                <h3 class="text-sm text-slate-400 font-medium">Pressure Vents</h3>
+                <p class="text-lg font-bold text-white tracking-wide">
+                  <span id="rage-clicks-field">0</span> <span class="text-xs text-slate-500 font-normal">rage clicks</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Level Indicator Tiers HUD -->
+            <div class="flex flex-wrap items-center space-x-4 gap-2">
+              <div class="flex items-center bg-slate-950/40 border border-slate-800/80 px-3.5 py-1.5 rounded-full">
+                <span id="rage-tier-icon" class="text-base mr-2">😡</span>
+                <span id="rage-tier-label" class="text-xs font-bold text-rose-500 tracking-wider">Level 1: Office Red Bell</span>
+              </div>
+
+              <!-- Core Thermometer Level -->
+              <div class="flex items-center space-x-2">
+                <span class="text-[10px] text-slate-500 uppercase font-black tracking-wider text-right">Speed Meter</span>
+                <div class="w-24 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-900/50">
+                  <div id="rage-heat-bar" class="h-full bg-gradient-to-r from-red-500 via-orange-500 to-yellow-400 rounded-full transition-all duration-100" style="width: 0%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Giant Button Arena -->
+          <div id="rage-button-arena" class="relative w-full aspect-square md:aspect-video flex flex-col items-center justify-center bg-radial from-slate-950 to-black rounded-3xl border border-slate-800 shadow-3xl overflow-hidden select-none">
+            <!-- Floating graphics sparks canvas -->
+            <canvas id="rage-canvas" class="absolute inset-0 pointer-events-none z-0"></canvas>
+
+            <!-- Absolute Glowing Button Ring Overlay -->
+            <div class="absolute w-80 h-80 bg-red-600/5 rounded-full filter blur-3xl z-0 pointer-events-none animate-pulse"></div>
+
+            <!-- 3D Giant Tactile Push Button -->
+            <div class="relative z-10 flex flex-col items-center justify-center">
+              <div class="relative w-48 h-48 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center shadow-[0_12px_24px_rgba(0,0,0,0.85)] z-0">
+                <div class="absolute inset-2 rounded-full bg-black shadow-inner"></div>
+
+                <button id="the-rage-button" onmousedown="pressRageButton(event)" ontouchstart="pressRageButton(event)" class="absolute rounded-full w-38 h-38 bg-gradient-to-b border-b-8 shadow-inner select-none transition-all outline-none cursor-pointer focus:outline-none flex items-center justify-center text-white from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 border-red-800 shadow-[0_12px_24px_rgba(239,68,68,0.4)]">
+                  <!-- Inner glossy reflections pattern -->
+                  <div class="absolute top-[8%] left-[10%] w-[80%] h-[35%] bg-gradient-to-b from-white/20 to-transparent rounded-full pointer-events-none"></div>
+
+                  <div class="flex flex-col items-center text-center drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                    <span class="text-3xl font-black tracking-wider uppercase mb-0.5">PUSH</span>
+                    <span class="text-[10px] uppercase tracking-widest font-bold opacity-80">VENT</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Lock Target States specifications -->
+            <div class="absolute bottom-6 bg-slate-950/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-slate-800 text-center text-[10px] text-slate-500 font-semibold tracking-wide">
+              Unlocks at: 100 • 500 • 1,000 • 5,000 clicks
+            </div>
+          </div>
+
+          <!-- Dynamic Comedy messages channel -->
+          <div class="flex items-center space-x-2 bg-slate-900/40 p-4 rounded-xl border border-slate-800/50 w-full mt-4 justify-center">
+            <i data-lucide="sparkles" class="w-4 h-4 text-rose-400 animate-pulse"></i>
+            <p id="rage-commentary" class="text-slate-200 text-xs text-center font-bold tracking-wide italic">"Press it. Direct instant venting."</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACHIEVEMENTS LOCKER VIEW -->
+      <div id="view-achievements" class="view-panel w-full py-4 animate-fade-in hidden">
+        <div class="flex flex-col w-full max-w-4xl mx-auto px-4 py-3 text-left">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 mb-5 border border-slate-800 shadow-xl items-center">
+            <div class="flex items-center space-x-3.5">
+              <div class="p-3 bg-amber-500/15 rounded-2xl border border-amber-500/20 text-amber-400">
+                <i data-lucide="trophy" class="w-6 h-6 animate-pulse"></i>
+              </div>
+              <div>
+                <h3 class="text-white font-bold text-base">Hall of Records</h3>
+                <p class="text-xs text-slate-400 tracking-wide">
+                  <span id="ach-unlocked-count">0</span> of <span id="ach-total-count">11</span> goals unlocked
+                </p>
+              </div>
+            </div>
+
+            <!-- Global completion progression meter -->
+            <div class="flex flex-col justify-center">
+              <div class="flex items-center justify-between text-xs font-semibold mb-1.5">
+                <span class="text-slate-400">Lab Completion</span>
+                <span id="ach-pct-text" class="text-amber-400 font-extrabold">0%</span>
+              </div>
+              <div class="w-full bg-slate-950/60 rounded-full h-2.5 border border-slate-800 overflow-hidden">
+                <div id="ach-global-progress-bar" class="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-400 rounded-full transition-all duration-500" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Cache deletion trigger -->
+            <div class="flex md:justify-end">
+              <button onclick="purgeAccomplishments()" class="flex items-center space-x-2 px-3.5 py-2 bg-slate-950/50 hover:bg-red-500/15 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/20 rounded-xl transition-all text-xs cursor-pointer select-none">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span class="font-semibold tracking-wide uppercase text-[10px]">Purge Progress Cache</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Categories Rails filter -->
+          <div class="flex flex-wrap items-center gap-1.5 mb-5 bg-slate-950/35 p-1 rounded-xl border border-slate-900 justify-center">
+            <button onclick="filterAchievements('all')" id="ach-tab-all" class="ach-tab-btn px-4 py-2 rounded-lg text-xs font-bold tracking-wider capitalize transition-all cursor-pointer select-none bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold">All Goals</button>
+            <button onclick="filterAchievements('bubble')" id="ach-tab-bubble" class="ach-tab-btn px-4 py-2 rounded-lg text-xs font-bold tracking-wider capitalize transition-all cursor-pointer select-none text-slate-400 hover:text-white hover:bg-slate-900/60">Bubble Wrap</button>
+            <button onclick="filterAchievements('smash')" id="ach-tab-smash" class="ach-tab-btn px-4 py-2 rounded-lg text-xs font-bold tracking-wider capitalize transition-all cursor-pointer select-none text-slate-400 hover:text-white hover:bg-slate-900/60">Smash Lab</button>
+            <button onclick="filterAchievements('spinner')" id="ach-tab-spinner" class="ach-tab-btn px-4 py-2 rounded-lg text-xs font-bold tracking-wider capitalize transition-all cursor-pointer select-none text-slate-400 hover:text-white hover:bg-slate-900/60">Fidget Spinner</button>
+            <button onclick="filterAchievements('rage')" id="ach-tab-rage" class="ach-tab-btn px-4 py-2 rounded-lg text-xs font-bold tracking-wider capitalize transition-all cursor-pointer select-none text-slate-400 hover:text-white hover:bg-slate-900/60">Rage Button</button>
+          </div>
+
+          <!-- Dynamic achievements grid of cards injected by JS -->
+          <div id="achievements-card-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Global Bottom Navigation Bar for flawless mobile-first triggers -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/70 backdrop-blur-md border-t border-slate-900/90 py-1.5 px-3 md:px-12 flex justify-around select-none">
+      <button onclick="switchTab('home')" id="nav-btn-home" class="nav-btn flex flex-col items-center justify-center py-1 px-3.5 rounded-xl cursor-pointer transition-all text-rose-400">
+        <i data-lucide="smile" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Lobby</span>
+      </button>
+
+      <button onclick="switchTab('bubble')" id="nav-btn-bubble" class="nav-btn flex flex-col items-center justify-center py-1 px-3.5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-white">
+        <i data-lucide="sparkles" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Popper</span>
+      </button>
+
+      <button onclick="switchTab('smash')" id="nav-btn-smash" class="nav-btn flex flex-col items-center justify-center py-1 px-3.5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-white">
+        <i data-lucide="hammer" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Smash</span>
+      </button>
+
+      <button onclick="switchTab('spinner')" id="nav-btn-spinner" class="nav-btn flex flex-col items-center justify-center py-1 px-3.5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-white">
+        <i data-lucide="rotate-cw" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Spinner</span>
+      </button>
+
+      <button onclick="switchTab('rage')" id="nav-btn-rage" class="nav-btn flex flex-col items-center justify-center py-1 px-3.5 rounded-xl cursor-pointer transition-all text-slate-400 hover:text-white">
+        <i data-lucide="flame" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[9px] font-bold uppercase tracking-wider">Rage</span>
+      </button>
+    </nav>
+
+    <!-- Custom Script hosting all game states, physics loops, audio synthesis and achievements -->
+    <script src="script.js"></script>
   </body>
 </html>
-
