@@ -1,0 +1,6 @@
+{
+  "name": "PopLab",
+  "description": "An interactive stress-relief and boredom-killing micro-game collection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
